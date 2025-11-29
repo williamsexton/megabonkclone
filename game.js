@@ -12,6 +12,12 @@ let scene, camera, renderer, playerMesh, clock;
 let lastFrameTime = performance.now();
 const keys = { w: false, a: false, s: false, d: false };
 
+// Mobile controls
+let mobileJoysticks = {
+    move: { active: false, x: 0, y: 0 },
+    camera: { active: false, x: 0, y: 0 }
+};
+
 let state = {
     isRunning: false, isPaused: false, frame: 0, time: 0, kills: 0, level: 1, xp: 0, xpToNextLevel: 5,
     hp: 100, maxHp: 100, playerColor: 0xffffff, shield: 0, maxShield: 0, shieldRegenTimer: 0,
@@ -104,6 +110,88 @@ function init() {
     clock = new THREE.Clock();
     loadAssets();
     animate();
+    setupMobileControls();
+}
+
+function setupMobileControls() {
+    // Show joysticks on touch devices
+    if ('ontouchstart' in window) {
+        document.getElementById('mobile-move-joystick').style.display = 'block';
+        document.getElementById('mobile-camera-joystick').style.display = 'block';
+        document.getElementById('controls-hint').style.display = 'none';
+    }
+    
+    // Handle move joystick
+    const moveJoy = document.getElementById('mobile-move-joystick');
+    const moveStick = moveJoy.querySelector('.mobile-joystick-stick');
+    
+    moveJoy.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        mobileJoysticks.move.active = true;
+    });
+    
+    moveJoy.addEventListener('touchmove', (e) => {
+        if (!mobileJoysticks.move.active) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = moveJoy.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        let dx = touch.clientX - centerX;
+        let dy = touch.clientY - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const maxDist = rect.width / 2 - 25;
+        if (distance > maxDist) {
+            dx = dx / distance * maxDist;
+            dy = dy / distance * maxDist;
+        }
+        moveStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+        mobileJoysticks.move.x = dx / maxDist;
+        mobileJoysticks.move.y = dy / maxDist;
+    });
+    
+    moveJoy.addEventListener('touchend', () => {
+        mobileJoysticks.move.active = false;
+        mobileJoysticks.move.x = 0;
+        mobileJoysticks.move.y = 0;
+        moveStick.style.transform = 'translate(-50%, -50%)';
+    });
+    
+    // Handle camera joystick
+    const camJoy = document.getElementById('mobile-camera-joystick');
+    const camStick = camJoy.querySelector('.mobile-joystick-stick');
+    
+    camJoy.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        mobileJoysticks.camera.active = true;
+    });
+    
+    camJoy.addEventListener('touchmove', (e) => {
+        if (!mobileJoysticks.camera.active) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = camJoy.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        let dx = touch.clientX - centerX;
+        let dy = touch.clientY - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const maxDist = rect.width / 2 - 25;
+        if (distance > maxDist) {
+            dx = dx / distance * maxDist;
+            dy = dy / distance * maxDist;
+        }
+        camStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+        mobileJoysticks.camera.x = dx / maxDist;
+        mobileJoysticks.camera.y = dy / maxDist;
+    });
+    
+    camJoy.addEventListener('touchend', () => {
+        mobileJoysticks.camera.active = false;
+        mobileJoysticks.camera.x = 0;
+        mobileJoysticks.camera.y = 0;
+        camStick.style.transform = 'translate(-50%, -50%)';
+    });
 }
 
 window.gameStart = function(charType) {
@@ -298,12 +386,27 @@ function animate() {
     camera.position.set(playerMesh.position.x + cx, playerMesh.position.y + cy, playerMesh.position.z + cz);
     camera.lookAt(playerMesh.position.clone().add(new THREE.Vector3(0, 1.5, 0)));
     
+    // Camera control (mobile joystick or mouse)
+    if (mobileJoysticks.camera.active) {
+        state.camTheta -= mobileJoysticks.camera.x * 0.05;
+        state.camPhi = Math.max(0.1, Math.min(Math.PI / 2 - 0.1, state.camPhi + mobileJoysticks.camera.y * 0.05));
+    }
+    
     // Player movement
     const move = new THREE.Vector3(0, 0, 0);
+    
+    // Mobile joystick input
+    if (mobileJoysticks.move.active) {
+        move.x = mobileJoysticks.move.x;
+        move.z = mobileJoysticks.move.y;
+    }
+    
+    // Keyboard input
     if (keys.w) move.z -= 1;
     if (keys.s) move.z += 1;
     if (keys.a) move.x -= 1;
     if (keys.d) move.x += 1;
+    
     if (move.lengthSq() > 0) {
         const fwd = new THREE.Vector3();
         camera.getWorldDirection(fwd);
