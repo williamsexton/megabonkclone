@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Never Goon Daily: The rise of AGI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="fps-counter">FPS: 60</div>
+    <div id="model-loading-debug"></div>
+    
+    <div id="title-screen">
+        <h1 style="color: #00ffcc; text-shadow: 0 0 20px #00ffcc;">Never Goon Daily the Game:</h1>
+        <h2 style="color: #00ffcc; text-shadow: 0 0 20px #00ffcc;">The rise of Artificial Gooning Intelligence</h2>
+        <div id="loading-status">LOADING ASSETS...</div>
+        <p>Choose your Character</p>
+        <div class="char-select">
+            <div class="char-card" onclick="window.gameStart('mage')"> 
+                <canvas id="preview-mage" width="150" height="150" style="display:none;"></canvas>
+                <div class="char-color" id="placeholder-mage" style="background: #3366ff;">Loading...</div> 
+                <div class="upgrade-title">Vinnie Minion</div> 
+                <div class="upgrade-desc">Start: Gun</div> 
+            </div>
+            <div class="char-card" onclick="window.gameStart('tank')"> 
+                <canvas id="preview-tank" width="150" height="150" style="display:none;"></canvas>
+                <div class="char-color" id="placeholder-tank" style="background: #ffaa00;">Loading...</div> 
+                <div class="upgrade-title">Goonabomber</div> 
+                <div class="upgrade-desc">Start: Goonabomb</div> 
+            </div>
+            <div class="char-card" onclick="window.gameStart('warrior')"> 
+                <canvas id="preview-warrior" width="150" height="150" style="display:none;"></canvas>
+                <div class="char-color" id="placeholder-warrior" style="background: #cccccc;">Loading...</div> 
+                <div class="upgrade-title">The Host</div> 
+                <div class="upgrade-desc">Start: Fist</div> 
+            </div>
+            <div class="char-card" onclick="window.gameStart('ranger')"> 
+                <canvas id="preview-ranger" width="150" height="150" style="display:none;"></canvas>
+                <div class="char-color" id="placeholder-ranger" style="background: #33ff33;">Loading...</div> 
+                <div class="upgrade-title">Co-Host</div> 
+                <div class="upgrade-desc">Start: Boomerang</div> 
+            </div>
+        </div>
+        <p style="margin-top: 20px; font-size: 12px; color: #666;">Disclaimer: Gooning is harmful.</p>
+    </div>
+    
+    <div id="xp-bar-container"><div id="xp-bar-fill"></div></div>
+    <div id="player-bars"><div class="bar-bg"><div id="hp-fill"></div><div id="shield-fill"></div><div class="bar-label">HP / SHIELD</div></div></div>
+    
+    <div id="boss-health-container">
+        <div id="boss-name">BOSS</div>
+        <div id="boss-health-bar-bg">
+            <div id="boss-health-bar-fill"></div>
+            <div id="boss-health-text">100 / 100</div>
+        </div>
+    </div>
+    
+    <div id="inventory">
+        <div class="inv-section-title">Weapons</div>
+        <div id="inventory-weapons"></div>
+        <div class="inv-section-title">Items</div>
+        <div id="inventory-items"></div>
+    </div>
+    
+    <div id="ui-layer">
+        <div id="hud-top">
+            <div id="time-display">00:00</div>
+            <div id="level-display">LVL 1</div>
+            <div id="kill-display">KILLS: 0</div>
+        </div>
+        <div id="powerup-notif">MAGNET!</div>
+        <div id="boss-warning">WARNING: BOSS APPROACHING</div>
+        <div id="controls-hint">WASD to Move | Click to Capture Cursor (ESC to release)</div>
+    </div>
+    
+    <div id="modal-overlay">
+        <h2 id="modal-title">LEVEL UP!</h2>
+        <div id="modal-subtitle">Choose an upgrade</div>
+        <div class="card-container" id="upgrade-cards"></div>
+    </div>
+    
+    <div id="game-over">
+        <h1>YOU DIED</h1>
+        <p id="final-stats" style="font-size: 20px; margin-bottom: 30px;">Survived: 00:00</p>
+        <button class="restart-btn" onclick="window.returnToTitle()">Main Menu</button>
+    </div>
+    
+    <!-- Mobile Controls -->
+    <div id="mobile-move-joystick" class="mobile-joystick">
+        <div class="mobile-joystick-stick"></div>
+    </div>
+    <div id="mobile-camera-joystick" class="mobile-joystick">
+        <div class="mobile-joystick-stick"></div>
+    </div>
+
+    <script type="module" src="game.js"></script>
+</body>
+</html>
