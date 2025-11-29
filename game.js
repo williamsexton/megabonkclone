@@ -111,7 +111,14 @@ window.gameStart = function(charType) {
     document.getElementById('ui-layer').style.display = 'flex';
     document.getElementById('xp-bar-container').style.display = 'block';
     document.getElementById('player-bars').style.display = 'block';
-    renderer.domElement.requestPointerLock();
+    
+    // Try to request pointer lock, but don't block game start if it fails (iOS doesn't support it)
+    if (renderer.domElement.requestPointerLock) {
+        renderer.domElement.requestPointerLock().catch(() => {
+            console.log('Pointer lock not supported, continuing without it');
+        });
+    }
+    
     mixers.length = 0;
     generateCity(scene, state.cityBlocks);
     
