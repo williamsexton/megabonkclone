@@ -289,6 +289,8 @@ window.returnToTitle = function() {
     document.getElementById('title-screen').style.display = 'flex';
 };
 
+let damageFlashTimer = 0;
+
 function takeDamage(amt) {
     let actualDmg = amt * (state.damageReduction ? 0.5 : 1);
     if (state.shield > 0) {
@@ -303,25 +305,12 @@ function takeDamage(amt) {
     state.shieldRegenTimer = 180;
     if (state.bloodyLustStacks < 10) state.bloodyLustStacks++;
     
-    playerMesh.traverse(c => {
-        if (c.isMesh && c.material) {
-            if (c.material.emissive) c.material.emissive.setHex(0xff0000);
-            else if (c.material.color) c.material.color.setHex(0xff0000);
-        }
-    });
-    
-    setTimeout(() => {
-        playerMesh.traverse(c => {
-            if (c.isMesh && c.material) {
-                if (c.userData.origEmissive !== undefined && c.material.emissive) c.material.emissive.setHex(c.userData.origEmissive);
-                if (c.userData.origColor !== undefined && c.material.color) c.material.color.setHex(c.userData.origColor);
-            }
-        });
-    }, 50);
+    // Set damage flash timer instead of using setTimeout
+    damageFlashTimer = 3; // frames
     
     if (state.hp <= 0) {
         state.isRunning = false;
-        document.exitPointerLock();
+        if (document.pointerLockElement) document.exitPointerLock();
         document.getElementById('final-stats').innerText = `Survived: ${document.getElementById('time-display').innerText} | Kills: ${state.kills}`;
         document.getElementById('game-over').style.display = 'flex';
     }
@@ -715,6 +704,31 @@ function animate() {
         entities.summonItem.mesh.rotation.x += 0.01;
         const scale = 1 + Math.sin(state.frame * 0.05) * 0.1;
         entities.summonItem.mesh.scale.set(scale, scale, scale);
+    }
+    
+    // Handle damage flash effect
+    if (damageFlashTimer > 0) {
+        damageFlashTimer--;
+        // Flash red
+        playerMesh.traverse(c => {
+            if (c.isMesh && c.material) {
+                if (c.material.emissive) c.material.emissive.setHex(0xff0000);
+                else if (c.material.color) c.material.color.setHex(0xff0000);
+            }
+        });
+    } else if (damageFlashTimer === 0) {
+        // Reset colors
+        playerMesh.traverse(c => {
+            if (c.isMesh && c.material) {
+                if (c.userData.origEmissive !== undefined && c.material.emissive) {
+                    c.material.emissive.setHex(c.userData.origEmissive);
+                }
+                if (c.userData.origColor !== undefined && c.material.color) {
+                    c.material.color.setHex(c.userData.origColor);
+                }
+            }
+        });
+        damageFlashTimer = -1; // Mark as done
     }
     
     // Progressive difficulty
