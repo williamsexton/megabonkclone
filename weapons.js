@@ -6,16 +6,20 @@ import { createParticles, checkEnemyDeath, spawnFly } from './entities.js';
 export function fireWand(state, entities, scene, playerMesh) {
     const count = 1 + state.projectileCount + Math.floor((state.weapons.wand.level - 1) / 2);
     
+    // Find target once for this volley
+    let target = null, minDist = 1000;
+    entities.enemies.forEach(e => {
+        const d = playerMesh.position.distanceTo(e.mesh.position);
+        if (d < 25 && d < minDist) { minDist = d; target = e; }
+    });
+    if (!target) return;
+    
+    // Calculate direction once
+    const targetPos = target.mesh.position.clone();
+    const baseDir = new THREE.Vector3().subVectors(targetPos, playerMesh.position).normalize();
+    
     for (let i = 0; i < count; i++) {
         setTimeout(() => {
-            // Find target at time of firing
-            let target = null, minDist = 1000;
-            entities.enemies.forEach(e => {
-                const d = playerMesh.position.distanceTo(e.mesh.position);
-                if (d < 25 && d < minDist) { minDist = d; target = e; }
-            });
-            if (!target) return;
-            
             const mesh = new THREE.Mesh(
                 new THREE.SphereGeometry(0.3 * state.areaMult),
                 new THREE.MeshBasicMaterial({ color: CONFIG.colors.projectile })
@@ -24,7 +28,8 @@ export function fireWand(state, entities, scene, playerMesh) {
             mesh.position.y = 1;
             scene.add(mesh);
             
-            const dir = new THREE.Vector3().subVectors(target.mesh.position, playerMesh.position).normalize();
+            // Use the pre-calculated direction
+            const dir = baseDir.clone();
             entities.projectiles.push({
                 type: 'wand',
                 mesh,
