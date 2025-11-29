@@ -5,15 +5,17 @@ import { createParticles, checkEnemyDeath, spawnFly } from './entities.js';
 
 export function fireWand(state, entities, scene, playerMesh) {
     const count = 1 + state.projectileCount + Math.floor((state.weapons.wand.level - 1) / 2);
-    let target = null, minDist = 1000;
-    entities.enemies.forEach(e => {
-        const d = playerMesh.position.distanceTo(e.mesh.position);
-        if (d < 25 && d < minDist) { minDist = d; target = e; }
-    });
-    if (!target) return;
     
     for (let i = 0; i < count; i++) {
         setTimeout(() => {
+            // Find target at time of firing
+            let target = null, minDist = 1000;
+            entities.enemies.forEach(e => {
+                const d = playerMesh.position.distanceTo(e.mesh.position);
+                if (d < 25 && d < minDist) { minDist = d; target = e; }
+            });
+            if (!target) return;
+            
             const mesh = new THREE.Mesh(
                 new THREE.SphereGeometry(0.3 * state.areaMult),
                 new THREE.MeshBasicMaterial({ color: CONFIG.colors.projectile })
@@ -21,9 +23,8 @@ export function fireWand(state, entities, scene, playerMesh) {
             mesh.position.copy(playerMesh.position);
             mesh.position.y = 1;
             scene.add(mesh);
-            const dir = entities.enemies.includes(target) ?
-                new THREE.Vector3().subVectors(target.mesh.position, playerMesh.position).normalize() :
-                new THREE.Vector3(1, 0, 0);
+            
+            const dir = new THREE.Vector3().subVectors(target.mesh.position, playerMesh.position).normalize();
             entities.projectiles.push({
                 type: 'wand',
                 mesh,
