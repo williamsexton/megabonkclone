@@ -114,83 +114,114 @@ function init() {
 }
 
 function setupMobileControls() {
-    // Show joysticks on touch devices
-    if ('ontouchstart' in window) {
-        document.getElementById('mobile-move-joystick').style.display = 'block';
-        document.getElementById('mobile-camera-joystick').style.display = 'block';
-        document.getElementById('controls-hint').style.display = 'none';
-    }
+    // Don't show joysticks initially - only when game starts
     
-    // Handle move joystick
+    // Handle move joystick with touch identifier tracking
     const moveJoy = document.getElementById('mobile-move-joystick');
     const moveStick = moveJoy.querySelector('.mobile-joystick-stick');
+    let moveTouchId = null;
     
     moveJoy.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        mobileJoysticks.move.active = true;
+        if (moveTouchId === null) {
+            moveTouchId = e.changedTouches[0].identifier;
+            mobileJoysticks.move.active = true;
+        }
     });
     
     moveJoy.addEventListener('touchmove', (e) => {
-        if (!mobileJoysticks.move.active) return;
         e.preventDefault();
-        const touch = e.touches[0];
-        const rect = moveJoy.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        let dx = touch.clientX - centerX;
-        let dy = touch.clientY - centerY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const maxDist = rect.width / 2 - 25;
-        if (distance > maxDist) {
-            dx = dx / distance * maxDist;
-            dy = dy / distance * maxDist;
+        if (!mobileJoysticks.move.active) return;
+        
+        // Find the touch that belongs to this joystick
+        for (let i = 0; i < e.touches.length; i++) {
+            if (e.touches[i].identifier === moveTouchId) {
+                const touch = e.touches[i];
+                const rect = moveJoy.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                let dx = touch.clientX - centerX;
+                let dy = touch.clientY - centerY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const maxDist = rect.width / 2 - 25;
+                if (distance > maxDist) {
+                    dx = dx / distance * maxDist;
+                    dy = dy / distance * maxDist;
+                }
+                moveStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                mobileJoysticks.move.x = dx / maxDist;
+                mobileJoysticks.move.y = dy / maxDist;
+                break;
+            }
         }
-        moveStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-        mobileJoysticks.move.x = dx / maxDist;
-        mobileJoysticks.move.y = dy / maxDist;
     });
     
-    moveJoy.addEventListener('touchend', () => {
-        mobileJoysticks.move.active = false;
-        mobileJoysticks.move.x = 0;
-        mobileJoysticks.move.y = 0;
-        moveStick.style.transform = 'translate(-50%, -50%)';
+    moveJoy.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === moveTouchId) {
+                mobileJoysticks.move.active = false;
+                mobileJoysticks.move.x = 0;
+                mobileJoysticks.move.y = 0;
+                moveStick.style.transform = 'translate(-50%, -50%)';
+                moveTouchId = null;
+                break;
+            }
+        }
     });
     
-    // Handle camera joystick
+    // Handle camera joystick with touch identifier tracking
     const camJoy = document.getElementById('mobile-camera-joystick');
     const camStick = camJoy.querySelector('.mobile-joystick-stick');
+    let camTouchId = null;
     
     camJoy.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        mobileJoysticks.camera.active = true;
+        if (camTouchId === null) {
+            camTouchId = e.changedTouches[0].identifier;
+            mobileJoysticks.camera.active = true;
+        }
     });
     
     camJoy.addEventListener('touchmove', (e) => {
-        if (!mobileJoysticks.camera.active) return;
         e.preventDefault();
-        const touch = e.touches[0];
-        const rect = camJoy.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        let dx = touch.clientX - centerX;
-        let dy = touch.clientY - centerY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const maxDist = rect.width / 2 - 25;
-        if (distance > maxDist) {
-            dx = dx / distance * maxDist;
-            dy = dy / distance * maxDist;
+        if (!mobileJoysticks.camera.active) return;
+        
+        // Find the touch that belongs to this joystick
+        for (let i = 0; i < e.touches.length; i++) {
+            if (e.touches[i].identifier === camTouchId) {
+                const touch = e.touches[i];
+                const rect = camJoy.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                let dx = touch.clientX - centerX;
+                let dy = touch.clientY - centerY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const maxDist = rect.width / 2 - 25;
+                if (distance > maxDist) {
+                    dx = dx / distance * maxDist;
+                    dy = dy / distance * maxDist;
+                }
+                camStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                mobileJoysticks.camera.x = dx / maxDist;
+                mobileJoysticks.camera.y = dy / maxDist;
+                break;
+            }
         }
-        camStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-        mobileJoysticks.camera.x = dx / maxDist;
-        mobileJoysticks.camera.y = dy / maxDist;
     });
     
-    camJoy.addEventListener('touchend', () => {
-        mobileJoysticks.camera.active = false;
-        mobileJoysticks.camera.x = 0;
-        mobileJoysticks.camera.y = 0;
-        camStick.style.transform = 'translate(-50%, -50%)';
+    camJoy.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === camTouchId) {
+                mobileJoysticks.camera.active = false;
+                mobileJoysticks.camera.x = 0;
+                mobileJoysticks.camera.y = 0;
+                camStick.style.transform = 'translate(-50%, -50%)';
+                camTouchId = null;
+                break;
+            }
+        }
     });
 }
 
@@ -200,10 +231,24 @@ window.gameStart = function(charType) {
     document.getElementById('xp-bar-container').style.display = 'block';
     document.getElementById('player-bars').style.display = 'block';
     
+    // Show joysticks on touch devices when game starts
+    if ('ontouchstart' in window) {
+        document.getElementById('mobile-move-joystick').style.display = 'block';
+        document.getElementById('mobile-camera-joystick').style.display = 'block';
+        document.getElementById('controls-hint').style.display = 'none';
+    }
+    
     // Try to request pointer lock, but don't block game start if it fails (iOS doesn't support it)
     if (renderer.domElement.requestPointerLock) {
         renderer.domElement.requestPointerLock().catch(() => {
             console.log('Pointer lock not supported, continuing without it');
+        });
+    }
+    
+    // Request fullscreen on mobile for better experience
+    if ('ontouchstart' in window && document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {
+            console.log('Fullscreen not available');
         });
     }
     

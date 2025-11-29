@@ -449,7 +449,8 @@ button.restart-btn:hover {
     border-radius: 50%; 
     display: none; 
     z-index: 1000; 
-    touch-action: none; 
+    touch-action: none;
+    pointer-events: auto;
 }
 
 .mobile-joystick-stick { 
